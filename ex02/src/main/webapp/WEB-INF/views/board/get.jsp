@@ -4,18 +4,42 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ include file="../includes/header.jsp" %>
 
+<script type="text/javascript" src="/resources/js/reply.js"></script>
+
 <script type="text/javascript">
 $(document).ready(function(){
-	var operFrom = $("#operForm");
+	var operForm = $("#operForm");
 	
 	$("button[data-oper='modify']").on("click",function(e){
-		operForm.attr("action","/board/modify").submit();
+		operForm.submit();
 	});
 	
-	$("button[data-oper='list']").on("click",function(e){
-		operForm.find("#bno").remove();
-		operForm.attr("action","/board/list");
+	$("button[data-oper='list']").on("click", function(e) {
+		operForm.find("#bno").remove()
+        operForm.attr("action", "/board/list");
 		operForm.submit();
+    });
+	
+	console.log("==============");
+	console.log("JS TEST");
+
+	var bnoValue = '<c:out value="${board.bno}"/>';
+
+	/*
+	replyService.add(
+		{reply:"JS TEST", replyer:"tester", bno:bnoValue},
+		function(result){
+			alert("RESULT : " + result);
+		}
+	);
+	*/
+
+	replyService.getList({bno:bnoValue, page:1}, function(list){
+		
+		for(var i = 0, len = list.length || 0; i<len; i++){
+			console.log(list[i]);
+		}
+		
 	});
 });
 </script>
@@ -57,8 +81,8 @@ $(document).ready(function(){
 					</div>
 					<!-- /.form-group -->
 					
-					<button data-oper='modify' class="btn btn-default" onclick="location.href='/board/modify'">Modify</button>
-					<button data-oper='list' class="btn btn-info" onclick="location.href='/board/list'">List</button>
+					<button data-oper='modify' class="btn btn-default">Modify</button>
+					<button data-oper='list' class="btn btn-info">List</button>
 					
 					<form action="/board/modify" id='operForm' method="get">
 						<input type="hidden" id="bno" name="bno" value='<c:out value="${board.bno}"/>'>

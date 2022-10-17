@@ -49,12 +49,12 @@
 						
 						<div class="form-group">
 							<label>작성일</label>
-							<input class="form-control" name="regDate" value='<fmt:formatDate pattern="yyyy/mm/dd" value="${board.regDate}"/>' readonly="readonly">
+							<input class="form-control" name="regDate" value='<fmt:formatDate pattern="yyyy/MM/dd" value="${board.regDate}"/>' readonly="readonly">
 						</div>
 						
 						<div class="form-group">
 							<label>수정날짜</label>
-							<input class="form-control" name="updateDate" value='<fmt:formatDate pattern="yyyy/mm/dd" value="${board.updateDate}"/>' readonly="readonly">
+							<input class="form-control" name="updateDate" value='<fmt:formatDate pattern="yyyy/MM/dd" value="${board.updateDate}"/>' readonly="readonly">
 						</div>
 						<!-- /.form-group -->
 						
@@ -91,10 +91,10 @@ $(document).ready(function(){
 		}
 		else if(operation === 'list'){
 			formObj.attr("action", "/board/list").attr("method", "get");
-			var pageNumTag = $(input[name='pageNum']).clone();
-			var amountTag = $(input[name='amount']).clone();
-			var keywordTag = $(input[name='keyword']).clone();
-			var typeTag = $(input[name='type']).clone();
+			var pageNumTag = $("input[name='pageNum']").clone();
+			var amountTag = $("input[name='amount']").clone();
+			var keywordTag = $("input[name='keyword']").clone();
+			var typeTag = $("input[name='type']").clone();
 			
 			formObj.empty();
 			formObj.append(pageNumTag);
