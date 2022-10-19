@@ -32,6 +32,7 @@ public class BoardMapperTests {
 		list.forEach(board -> log.info(board));
 	}
 	
+	/*
 	@Test
 	public void testGetList() {
 		mapper.getList().forEach(board -> log.info(board));
@@ -95,4 +96,5 @@ public class BoardMapperTests {
 		int count = mapper.update(board);
 		log.info("UPDATE COUNT : "+count);
 	}
+	*/
 }

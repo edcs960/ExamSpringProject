@@ -25,10 +25,33 @@
 	</update>
 	
 	<!-- 댓글 리스트 가져오기 -->
+	<!--
 	<select id="getListWithPaging" resultType="org.zerock.domain.ReplyVO">
 		select rno, bno,reply,replyer, replyDate, updatedate
 		from tb1_reply
 		where bno=#{bno}
 		order by rno asc
+	</select>
+	-->
+	
+	<select id="getListWithPaging" resultType="org.zerock.domain.ReplyVO">
+		<![CDATA[
+			select rno, bno, reply, replyer, replydate, updatedate
+			from
+				(
+					select /*+INDEX(tb1_reply idx_reply) */ 
+						rownum rn, rno, bno, reply, replyer, replydate, updatedate
+					from tb1_reply
+					where bno = #{bno}
+					and rno > 0
+					and rownum <= #{cri.pageNum} * #{cri.amount}
+				) where rn > (#{cri.pageNum}-1) * #{cri.amount}
+		]]>
+	</select>
+	
+	<select id="getCountByBno" resultType="int">
+		<![CDATA[
+			select count(rno) from tb1_reply where bno=#{bno}
+		]]>
 	</select>
 </mapper>

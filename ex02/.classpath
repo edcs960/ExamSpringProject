@@ -26,6 +26,7 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
 		<attributes>
+			<attribute name="module" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
@@ -35,7 +36,12 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/82106/Desktop/projectAndStudy/sqldeveloper-22.2.1.234.1810-x64/sqldeveloper/jdbc/lib/ojdbc8.jar">
+	<classpathentry kind="lib" path="C:/Users/User/Desktop/sqldeveloper-22.2.0.173.2018-x64/sqldeveloper/jdbc/lib/ojdbc8.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/User/Desktop/스프링/apache-tomcat-9.0.67/bin/bootstrap.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>

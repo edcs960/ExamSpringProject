@@ -39,6 +39,8 @@
 							<td><c:out value="${board.bno }" /></td>
 							<td><a class='move' href='<c:out value="${board.bno }" />'>
 									<c:out value="${board.title }" />
+									<b>[ <c:out value="${board.replyCnt}"/> ]</b>
+									
 							</a></td>
 							<td><c:out value="${board.writer }" /></td>
 							<td><fmt:formatDate pattern="yyyy-MM-dd"
@@ -165,8 +167,7 @@
 				return;
 
 			if (parseInt(result) > 0)
-				$(".modal-body")
-						.html("게시글 " + parseInt(result) + "번이 등록되었습니다.");
+				$(".modal-body").html("게시글 " + parseInt(result) + "번이 등록되었습니다.");
 
 			$("#myModal").modal("show");
 		}
