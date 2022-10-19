@@ -5,6 +5,28 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Insert title here</title>
+<style type="text/css">
+.uploadResult{
+	width : 100%;
+	background-color : gray;
+}
+
+.uploadResult ul{
+	display: flex;
+	flex-flow: row;
+	justify-content: center;
+	align-items: center;
+}
+
+.uploadResult ul li {
+	list-style: none;
+	padding: 10px;
+}
+
+.uploadResult ul li img{
+	width: 20px;
+}
+</style>
 </head>
 <body>
 	<h1>Upload with Ajax</h1>
@@ -12,6 +34,12 @@
 		<input type="file" name="uploadFile" multiple="multiple">
 	</div>
 	<button id="uploadBtn">Upload</button>
+	
+	<div class="uploadResult">
+		<ul>
+		
+		</ul>
+	</div>
 	
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"
 			integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -21,6 +49,27 @@
 		$(document).ready(function(){
 			var regex = new RegExp("(.*?)\.(exe|sh|zip|alz)$");
 			var maxSize = 5242880;
+			var cloneObj = $(".uploadDiv").clone(); // input태그 복사
+			var uploadResult = $(".uploadResult ul");
+			
+			function showUploadedFile(uploadResultArr){
+				var str = "";
+				
+				$(uploadResultArr).each(function(i, obj){
+					if(!obj.image){
+						var fileCallPath = encodeURIComponent(obj.uploadPath + "/s_" + obj.uuid + "_" + obj.fileName);
+						
+						str += "<li><a href='/download?fileName="+fileCallPath+"'><img src='/resources/img/attach.png'>"+obj.fileName+"</a></li>";
+					}else{
+						// 파일 경로 인코딩
+						var fileCallPath = encodeURIComponent(obj.uploadPath + "/s_" + obj.uuid + "_" + obj.fileName);
+						
+						str += "<li><img src='/controller/display?fileName="+fileCallPath+"'></li>";
+					}
+				});
+				
+				uploadResult.append(str);
+			}
 			
 			function checkExtension(fileName, fileSize){
 				if(fileSize >= maxSize){
@@ -63,10 +112,15 @@
 					contentType: false,
 					data: formData,
 					type:'post',
+					dataType:'json',
 					success: function(result){
-						alter("Uploaded");
+						console.log(result);
+						
+						showUploadedFile(result);
+						
+						$(".uploadDiv").html(cloneObj.html()); // input태그 위치에 다시 추가
 					}
-				})
+				});
 			});
 		});
 	</script>
