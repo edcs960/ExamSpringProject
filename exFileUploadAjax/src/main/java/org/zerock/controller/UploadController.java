@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
@@ -150,46 +151,85 @@ public class UploadController {
 		return result;
 	}
 	
+	// 파일을 다운 받기 위해 MIME 타입을 application/octet-stream으로 설정
+	// 사용자가 사용중인 브라우저를 @RequestHeader를 통해 HTTP 헤더 메시지의 User-Agent 데이터를 가져옴
 	@GetMapping(value = "/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@ResponseBody
-	public ResponseEntity<Resource> downloadFile(@RequestHeader("User-Agent")String userAgent, String fileName){
-		// 경로 이슈
+	public ResponseEntity<Resource> downloadFile(@RequestHeader("User-Agent") String userAgent, String fileName){
+		
+		// 업로드한 파일 경로 가져오기
 		Resource resource = new FileSystemResource("C:\\upload\\" + fileName);
 		
+		// 업로드한 파일이 있는지 없는지 체크
 		if(resource.exists() == false) {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);// 없으면 not_found 상태 리턴
 		}
 		
+		// 파일이름 가져오기
 		String resourceName = resource.getFilename();
+		
+		// UUID 제거
+		String resourceOriginalName = resourceName.substring(resourceName.indexOf("_")+1); 
 		
 		HttpHeaders headers = new HttpHeaders();
 		
 		try {
 			String downloadName = null;
 			
+			// 브라우저별 인코딩 처리
 			if(userAgent.contains("Trident")) {
 				log.info("IE browser");
 				
-				downloadName = URLEncoder.encode(resourceName,"UTF-8").replaceAll("\\", " ");
+				downloadName = URLEncoder.encode(resourceOriginalName,"UTF-8").replaceAll("\\", " ");
 			}
 			else if(userAgent.contains("Edge browser")) {
 				log.info("Edge browser");
 				
-				downloadName = new String(resourceName.getBytes("UTF-8"),"ISO-8859-1");
-				
-				log.info("Edge name : " + downloadName);
+				downloadName = URLEncoder.encode(resourceOriginalName,"UTF-8");
 			}
 			else {
 				log.info("Chrome browser");
 				
-				downloadName = new String(resourceName.getBytes("UTF-8"),"ISO-8859-1");
+				downloadName = new String(resourceOriginalName.getBytes("UTF-8"),"ISO-8859-1");
 			}
 			
+			log.info("downloadName" + downloadName);
+			
+			// 헤더 설정
+			// Content-Disposition을 통해 파일 이름 문자열 처리할 때 한글 깨지는 문제 막기 위해 사용
+			// filename에 다운로드할 파일 설정
 			headers.add("Content-Disposition", "attachment; filename=" + downloadName);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 		
 		return new ResponseEntity<Resource>(resource, headers, HttpStatus.OK);
+	}
+	
+	@PostMapping("/deleteFile")
+	@ResponseBody
+	public ResponseEntity<String> deleteFile(String fileName, String type){
+		
+		log.info("deleteFile : " + fileName);
+		
+		File file;
+		
+		try {
+			file = new File("C:\\upload\\" + URLDecoder.decode(fileName,"UTF-8"));
+			
+			file.delete();
+			
+			if(type.equals("image")) {
+				String largeFileName = file.getAbsolutePath().replace("s_","");
+				log.info("largeFileName" + largeFileName);
+				file = new File(largeFileName);
+				file.delete();
+			}
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<>("deleted", HttpStatus.OK);
 	}
 }
