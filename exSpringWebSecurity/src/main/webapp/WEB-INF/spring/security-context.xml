@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- 직접 작성한 Handler 클래스를 이용하기 위해 Bean에 저장 -->
+	<bean id="customAccessDenied" class="org.zerock.security.CustomAccessDeniedHandler"></bean>
+	<bean id="customLoginSuccess" class="org.zerock.security.CustomLoginSuccessHandler"></bean>
+	
+	<security:http>
+		<!-- 
+			security:intercept-url
+			- pattern : URI 패턴
+			- access : 권한 체크
+		 -->
+		<security:intercept-url pattern="/sample/all" access="permitAll"/>
+		<security:intercept-url pattern="/sample/member" access="hasRole('ROLE_MEMBER')"/>
+		<security:intercept-url pattern="/sample/admin" access="hasRole('ROLE_ADMIN')"/>
+	
+		
+		<!-- 에러 페이지 -->
+		<security:access-denied-handler ref="customAccessDenied"/>
+	
+		<!-- 
+			로그인 페이지
+			- 로그인을 성공했을 때 authentication-success-handler-ref에 설정된 핸들러로 진입
+		-->
+		<security:form-login login-page="/customLogin" authentication-success-handler-ref="customLoginSuccess"/>
+		
+		<!-- 
+			로그아웃 페이지 
+			- 로그아웃 시 logout-url에 설정된 페이지로 요청
+			- invalidate-session을 통해 세션정보를 제거
+		-->
+		<security:logout logout-url="/customLogout" invalidate-session="true"/>
+		
+	</security:http>
+	
+	<!-- 
+		스프링 시큐리티가 동작하기 위해서 Authentication Manager가 필요
+		<security:authentication-manager> 부분이 스프링 시큐리티가 스프링 MVC에서 작동하는 시작 지점
+	 -->
+	<security:authentication-manager>
+		<security:authentication-provider>
+			<security:user-service>
+				<!-- 계정 설정 및 권한 부여 -->
+				<security:user name="member" password="{noop}member" authorities="ROLE_MEMBER"/>	
+				<security:user name="admin" password="{noop}admin" authorities="ROLE_MEMBER, ROLE_ADMIN"/>
+			</security:user-service>
+		</security:authentication-provider>
+	</security:authentication-manager>
+</beans>
