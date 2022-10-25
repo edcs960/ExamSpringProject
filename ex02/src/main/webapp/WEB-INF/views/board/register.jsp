@@ -2,6 +2,9 @@
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+
 <%@ include file="../includes/header.jsp" %>
 <style type="text/css">
 .uploadResult{
@@ -108,6 +111,9 @@
 			uploadUL.append(str);
 		}
 		
+		var csrfHeaderName = "${_csrf.headerName}";
+		var csrfTokenValue = "${_csrf.token}";
+		
 		$("input[type='file']").change(function(e){
 			var formData = new FormData();
 			
@@ -127,6 +133,9 @@
 				url:'/uploadAjaxAction',
 				processData:false,
 				contentType:false,
+				beforeSend: function(xhr){
+					xhr.setRequestHeader(csrfHeaderName, csrfTokenValue);
+				},
 				data:formData,
 				type:'POST',
 				dataType:'json',
@@ -148,6 +157,9 @@
 			$.ajax({
 				url:'/deleteFile',
 				data: {fileName:targetFile, type:type},
+				beforeSend: function(xhr){
+					xhr.setRequestHeader(csrfHeaderName, csrfTokenValue);
+				},
 				dataType:'text',
 				type:'POST',
 				success: function(result){
@@ -196,6 +208,7 @@
 			
 			<div class="panel-body">
 				<form action="/board/register" role="form" method="POST">
+					<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
 					<div class="form-group">
 						<label>제목</label>
 						<input class="form-control" name="title">
@@ -205,7 +218,8 @@
 						<textarea class="form-control" name="content" rows="3"></textarea>
 					</div>
 					<div class="form-group">
-						<label>작성자</label> <input class="form-control" name="writer">
+						<!-- 로그인한 사용자의 아이디 표시 -->
+						<label>작성자</label> <input class="form-control" name="writer" value='<sec:authentication property="principal.username"/>' readonly="readonly">
 					</div>
 					<!-- /.form-group -->
 					

@@ -44,7 +44,7 @@
 	
 	<!-- 한글 깨짐 처리 -->
 	<filter>
-		<filter-name>encoding</filter-name>
+		<filter-name>encodingFilter</filter-name>
 		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
 		<init-param>
 			<param-name>encoding</param-name>
@@ -53,7 +53,32 @@
 	</filter>
 	
 	<filter-mapping>
-		<filter-name>encoding</filter-name>
-		<servlet-name>appServlet</servlet-name>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
 	</filter-mapping>
+	
+	<!-- 스프링 시큐리티가 스프링 MVC에서 사용되기 위해 필터를 이용해 스프링 동작에 관여하도록 설정 -->
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<!-- 
+		위 필터만 작성하면 NoSuchBeanDefinitionException이 발생하는데
+		이 예외는 springSecurityFilterChain라는 빈이 설정되지 않아서 발생하는 문제
+		-> 스프링 시큐리티 설정파일을 찾을 수 없어서 발생한 문제로 생각하면됨.
+		
+		context-param을 통해 security-context.xml 파일 로딩과 해당 파일에 최소한의 설정이 필요
+	-->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/spring/root-context.xml
+		/WEB-INF/spring/security-context.xml
+		</param-value>
+	</context-param>
 </web-app>

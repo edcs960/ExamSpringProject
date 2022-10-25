@@ -3,6 +3,11 @@
 <html>
 <head>
 	<title>Home</title>
+	<script>
+	
+		self.location="/board/list";
+	
+	</script>
 </head>
 <body>
 <h1>

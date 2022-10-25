@@ -1,6 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+
 <%@ include file="../includes/header.jsp" %>
 
 <style type="text/css">
@@ -72,6 +75,7 @@
 			<!-- /.panel-heading -->
 			
 			<form action="/board/modify" role="form" method="post">
+				<input type="hidden" name="${_csrf.parameterName }" value="${_csrf.token}">
 				<input type="hidden" name="pageNum" value='<c:out value="${cri.pageNum}"/>'>
 				<input type="hidden" name="amount" value='<c:out value="${cri.amount}"/>'>
 				<input type="hidden" name="keyword" value='<c:out value="${cri.keyword}"/>'>
@@ -107,9 +111,13 @@
 							<input class="form-control" name="updateDate" value='<fmt:formatDate pattern="yyyy/MM/dd" value="${board.updateDate}"/>' readonly="readonly">
 						</div>
 						<!-- /.form-group -->
-						
-						<button type="submit" data-oper='modify' class="btn btn-default">Modify</button>
-						<button type="submit" data-oper='remove' class="btn btn-danger">Remove</button>
+						<sec:authentication property="principal" var="pinfo"/>
+						<sec:authorize access="isAuthenticated()">
+							<c:if test="${pinfo.username eq board.writer}">
+								<button type="submit" data-oper='modify' class="btn btn-default">Modify</button>
+								<button type="submit" data-oper='remove' class="btn btn-danger">Remove</button>
+							</c:if>
+						</sec:authorize>
 						<button type="submit" data-oper='list' class="btn btn-info">List</button>
 				</div>
 				<!-- /.end panel-body -->
@@ -165,12 +173,17 @@ $(document). ready(function(){
 					var fileCallPath = encodeURIComponent(attach.uploadPath + "/s_"+attach.uuid+"_"+attach.fileName);
 					
 					str += "<li data-path='"+attach.uploadPath+"' data-uuid='"+attach.uuid+"' data-filename='"+attach.fileName+"' data-type='"+attach.fileType+"'><div>"
+							+ "<span>" + attach.fileName + "</span>"
+							+ "<button type='button' data-file=\'" + fileCallPath + "\' data-type='image' class='btn btn-warning btn-circle'>"
+		                    + "<i class='fa fa-times'></i></button><br>"
 					        + "<img src='/display?fileName="+fileCallPath+"'>"
 					        + "</div></li>";
 				}
 				else{
+					var fileCallPath = encodeURIComponent(attach.uploadPath + "/" + attach.uuid + "_" + attach.fileName);
 					str += "<li data-path='"+attach.uploadPath+"' data-uuid='"+attach.uuid+"' data-filename='"+attach.fileName+"' data-type='"+attach.fileType+"'><div>"
 							+ "<span>"+attach.fileName+"</span><br/>"
+							+ "<button type='button' data-file=\'" + fileCallPath + "\' data-type='image' class='btn btn-warning btn-circle'>"
 					        + "<img src='/resources/img/attach.png'>"
 					        + "</div></li>";
 				}
@@ -237,6 +250,9 @@ $(document). ready(function(){
 		uploadUL.append(str);
 	}
 	
+	var csrfHeaderName = "${_csrf.headerName}";
+	var csrfTokenValue = "${_csrf.token}";
+	
 	$("input[type='file']").change(function(e){
 		var formData = new FormData();
 		
@@ -256,6 +272,9 @@ $(document). ready(function(){
 			url:'/uploadAjaxAction',
 			processData:false,
 			contentType:false,
+			beforeSend: function(xhr){
+				xhr.setRequestHeader(csrfHeaderName, csrfTokenValue);
+			},
 			data:formData,
 			type:'POST',
 			dataType:'json',
@@ -310,6 +329,7 @@ $(document).ready(function(){
 				str +="<input type='hidden' name='attachList["+i+"].uploadPath' value='"+jobj.data("path")+"'>"
 				str +="<input type='hidden' name='attachList["+i+"].fileType' value='"+jobj.data("type")+"'>"
 			});
+			formObj.append(str).submit();
 		}
 		formObj.submit();
 	});

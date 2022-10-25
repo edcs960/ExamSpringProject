@@ -2,6 +2,9 @@
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+
 <%@ include file="../includes/header.jsp" %>
 
 <script type="text/javascript" src="/resources/js/reply.js"></script>
@@ -179,14 +182,28 @@ $(document).ready(function(){
 	var modalRemoveBtn = $("#modalRemoveBtn");
 	var modalRegisterBtn = $("#modalRegisterBtn");
 	
+	var replyer = null;
+	
+	<sec:authorize access="isAuthenticated()">
+		replyer = '<sec:authentication property="principal.username"/>';
+	</sec:authorize>
+	
+	var csrfHeaderName = "${_csrf.headerName}";
+	var csrfTokenValue = "${_csrf.token}";
+	
 	$("#addReplyBtn").on("click", function(e){
 		modal.find("input").val("");
+		modal.find("input[name='replyer']").val(replyer);
 		modalInputReplyDate.closest("div").hide();
 		modal.find("button[id !='modalCloseBtn']").hide();
 		
 		modalRegisterBtn.show();
 		
 		$(".modal").modal("show")
+	});
+	
+	$(document).ajaxSend(function(e, xhr,options){
+		xhr.setRequestHeader(csrfHeaderName, csrfTokenValue);
 	});
 	
 	/* 모달창 저장 버튼 이벤트 */
@@ -209,7 +226,26 @@ $(document).ready(function(){
 	
 	/* 댓글 모달창 수정 이벤트 */
 	modalModBtn.on("click", function(e){
-		var reply = {rno:modal.data("rno"), reply:modalInputReply.val()};
+		var originalReplyer = modalInputReplyer.val();
+		var reply = {
+				rno:modal.data("rno"),
+				reply:modalInputReply.val(),
+				replyer : originalReplyer
+		};
+		
+		if(!replyer){
+			alert("로그인 후 수정이 가능합니다.");
+			modal.modal("hide");
+			return;
+		}
+		
+		console.log("Original Replyer : " + originalReplyer);
+		
+		if(replyer != originalReplyer){
+			alert("자신이 작성한 댓글만 수정이 가능합니다.");
+			modal.modal("hide");
+			return;
+		}
 		
 		replyService.update(reply, function(result){
 			alert(result);
@@ -222,7 +258,26 @@ $(document).ready(function(){
 	modalRemoveBtn.on("click", function(e){
 		var rno = modal.data("rno");
 		
-		replyService.remove(rno, function(result){
+		console.log("RNO : " + rno);
+		console.log("REPLYER :" + replyer);
+		
+		if(!replyer){
+			alert("로그인후 삭제가 가능합니다.");
+			modal.modal("hide");
+			return;
+		}
+		
+		var originalReplyer = modalInputReplyer.val();
+		
+		console.log("Original Replyer : " + originalReplyer);
+		
+		if(replyer != originalReplyer){
+			alert("자신이 작성한 댓글만 삭제가 가능합니다.");
+			modal.modal("hide");
+			return;
+		}
+		
+		replyService.remove(rno, originalReplyer, function(result){
 			alert(result);
 			modal.modal("hide");
 			showList(pageNum);
@@ -357,7 +412,13 @@ $(document).ready(function(){
 					</div>
 					<!-- /.form-group -->
 					
-					<button data-oper='modify' class="btn btn-default">수정하기</button>
+					<!-- 자기가 작성한 게시글일 때 수정하기 버튼 생기게함 -->
+					<sec:authentication property="principal" var="pinfo"/>
+					<sec:authorize access="isAuthenticated()">
+						<c:if test="${pinfo.username eq board.writer}">
+							<button data-oper='modify' class="btn btn-default">수정하기</button>
+						</c:if>
+					</sec:authorize>
 					<button data-oper='list' class="btn btn-info">게시판으로 돌아가기</button>
 					
 					<form action="/board/modify" id='operForm' method="get">
@@ -406,7 +467,10 @@ $(document).ready(function(){
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<i class="fa fa-comments fa-fw"></i> 댓글
-				<button id="addReplyBtn" class="btn btn-primary btn-xs pull-right">새 댓글 작성</button>
+				<!-- 로그인한 사용자만 댓글작성버튼 보이게함. -->
+				<sec:authorize access="isAuthenticated()">
+					<button id="addReplyBtn" class="btn btn-primary btn-xs pull-right">새 댓글 작성</button>
+				</sec:authorize>
 			</div>
 		</div>
 		<div class="panel-body">
