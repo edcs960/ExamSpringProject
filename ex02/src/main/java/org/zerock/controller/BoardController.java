@@ -36,6 +36,8 @@ import oracle.jdbc.proxy.annotation.Post;
 @RequestMapping("/board/*")
 @AllArgsConstructor
 public class BoardController {
+	System.out.println("Jenkins-test");
+	
 	private BoardService service;
 	
 	/*
